@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.4+deps] - 26-10-23
+
+### Changed
+
+- Relax `more-itertools` constraint _down_ to `>=8.0.0`
+- Relax other package constraints
+- Upgrade `dev` dependencies (`js` & `py`)
+- Upgrade `dash-extensions` dependencies
+
 ## [1.0.4] - 07-10-23
 
 ### Added

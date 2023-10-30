@@ -6,5 +6,17 @@
         "tests"
     ],
     "python.testing.unittestEnabled": false,
-    "python.testing.pytestEnabled": true
+    "python.testing.pytestEnabled": true,
+    "cSpell.words": [
+        "chromedriver",
+        "copyfiles",
+        "docgen",
+        "dompurify",
+        "Eriksen",
+        "fixdeps",
+        "packagejson",
+        "plotly",
+        "ssri",
+        "venv"
+    ]
 }

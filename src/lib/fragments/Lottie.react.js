@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
 import {propTypes} from '../components/Lottie.react';
-import L from 'react-lottie';
+import L from 'react-lottie-wrapper';
 
 /**
  * Light wrapper of the react Lottie component for Dash.

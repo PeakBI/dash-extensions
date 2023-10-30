@@ -3,6 +3,7 @@ const webpack = require('webpack');
 const packagejson = require('./package.json');
 const NodePolyfillPlugin = require("node-polyfill-webpack-plugin");
 const WebpackDashDynamicImport = require('@plotly/webpack-dash-dynamic-import');
+const TerserPlugin = require('terser-webpack-plugin');
 
 const dashLibraryName = packagejson.name.replace(/-/g, '_');
 
@@ -82,6 +83,22 @@ module.exports = (env, argv) => {
             ],
         },
         optimization: {
+            minimize: mode === 'production' ? true: false,
+            concatenateModules: mode === 'production' ? true: false,
+            emitOnErrors: true,
+            minimizer:  mode === 'production' ? [
+                new TerserPlugin({
+                  parallel: true,
+                  terserOptions: {
+                    // https://github.com/webpack-contrib/terser-webpack-plugin#terseroptions
+                  },
+                }),
+              ] : [],
+            flagIncludedChunks:  mode === 'production' ? true: false,
+            innerGraph:  mode === 'production' ? true: false,
+            removeEmptyChunks: mode === 'production' ? true: false,
+            mergeDuplicateChunks: mode === 'production' ? true: false,
+            nodeEnv: mode,
             splitChunks: {
                 name: '[name].js',
                 cacheGroups: {

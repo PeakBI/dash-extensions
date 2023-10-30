@@ -23,3 +23,7 @@ NB: The 1.0.0 version introduces a number of breaking changes, see documentation
 ## Donation
 
 [![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=Z9RXT5HVPK3B8&currency_code=DKK&source=url)
+
+## Installing
+
+* Only `release/{VERSION}` branches and `v{VERSION}` tags should be used for direct pip / poetry based install(s), installation(s) from branches that were not created by the `release` action will not work as they will be missing all the `webpack` generated files.

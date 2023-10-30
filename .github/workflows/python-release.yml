@@ -1,0 +1,135 @@
+# This workflows will upload a Python Package using Twine when a release is created
+# For more information see: https://help.github.com/en/actions/language-and-framework-guides/using-python-with-github-actions#publishing-to-package-registries
+
+name: Release Python Package
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: release-${{ github.head_ref }}-1
+  cancel-in-progress: true
+
+jobs:
+  release:
+    # Only run from the default branch
+    if: github.ref_name == github.event.repository.default_branch
+    runs-on: ubuntu-latest
+    env:
+      PYTHON_VERSION: "3.10"
+      POETRY_VERSION: "1.6.1"
+      NODE_VERSION: 'lts/*'
+      PYTHONDONTWRITEBYTECODE: 1
+    permissions:
+      # write permission is required to create a github release
+      contents: write
+      # write permission is required for autolabeler
+      # otherwise, read permission is required at least
+      pull-requests: write
+
+    steps:
+    - name: Checkout Repo
+      id: checkout
+      uses: actions/checkout@v4.1.1
+      with:
+        token: ${{ SECRETS.GITHUB_TOKEN }}
+        ref: ${{ github.event.repository.default_branch }}
+        fetch-depth: 0
+
+    - name: Check if there is a parent commit
+      id: check-parent-commit
+      run: |
+        echo "sha=$(git rev-parse --verify --quiet HEAD^)" | tee -a "$GITHUB_OUTPUT"
+
+    - name: Setup node
+      uses: actions/setup-node@v4.0.0
+      with:
+        node-version: '${{ env.NODE_VERSION }}'
+        registry-url: https://registry.npmjs.org/
+        cache: 'npm'
+        cache-dependency-path: 'package-lock.json'
+
+    - name: Set up Python
+      uses: actions/setup-python@v4.7.1
+      with:
+        python-version: '${{ env.PYTHON_VERSION }}'
+
+    - name: Install poetry
+      uses: Gr1N/setup-poetry@v8
+      with:
+        poetry-version: '${{ env.POETRY_VERSION }}'
+
+    - name: Cache poetry
+      id: cached-poetry-dependencies
+      uses: actions/cache@v3.3.2
+      with:
+        path: ~/.cache/pypoetry/virtualenvs
+        key: ${{ runner.os }}-poetry-${{ env.POETRY_VERSION }}-${{ hashFiles('poetry.lock') }}-python-${{ env.PYTHON_VERSION }}
+
+    - name: Check package version is valid
+      id: check-poetry-version-is-valid
+      run: poetry --version
+
+    - name: Install dependencies
+      id: install-dependencies
+      run: |
+        poetry install
+        poetry run npm install -g npm@latest
+
+    - name: Detect and tag new version
+      if: steps.check-parent-commit.outputs.sha != ''
+      id: get-version
+      run: |
+        VERSION="$(bash -o pipefail -c "poetry version | awk '{ print \$2 }'")"
+        echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+        echo "RELEASE_VERSION=v${VERSION}" >> $GITHUB_OUTPUT
+        echo "RELEASE_INFO=v${VERSION}" >> $GITHUB_OUTPUT
+
+    - name: Build python package
+      if: steps.get-version.outputs.RELEASE_VERSION != ''
+      id: build-for-release-branch
+      run: |
+        sed -i '/dash_extensions\/*/d' .gitignore
+        poetry run npm install | echo "Ignore npm install error"
+        poetry run npm run build_no_r
+        poetry build --ansi
+        tar xvf ./dist/dash_extensions-${{ steps.get-version.outputs.VERSION }}.tar.gz
+        rsync --recursive --update ./dash_extensions-${{ steps.get-version.outputs.VERSION }}/* .
+        rm -rf ./dash_extensions-${{ steps.get-version.outputs.VERSION }}
+        export rbranch="release/${{ steps.get-version.outputs.RELEASE_VERSION }}"
+        echo "RELEASE_BRANCH=$rbranch" >> $GITHUB_OUTPUT
+      env:
+        NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+    - name: Commit changes to Release Branch
+      if: steps.build-for-release-branch.outputs.RELEASE_BRANCH != ''
+      id: commit-and-create-branch
+      uses: EndBug/add-and-commit@v9.1.3
+      with:
+        add: '[".gitignore --force", "dash_extensions/* --force", "PKG-INFO", "."]'
+        new_branch: "release/${{ steps.get-version.outputs.RELEASE_VERSION }}"
+        message: "ci: create release for ${{ steps.get-version.outputs.RELEASE_VERSION }}"
+        push: "origin release/${{ steps.get-version.outputs.RELEASE_VERSION }} --force"
+
+    - name: Read CHANGELOG.md and use it as body of new release
+      if: steps.commit-and-create-branch.outputs.pushed != ''
+      id: read-changelog
+      shell: bash
+      run: |
+        python3 ./.github/workflows/extract.py ./CHANGELOG.md ${{ steps.get-version.outputs.VERSION }} > 'body.md'
+
+    - name: Create Release
+      if: steps.commit-and-create-branch.outputs.pushed != ''
+      id: create-release
+      uses: ncipollo/release-action@v1.13.0
+      with:
+        allowUpdates: true
+        bodyFile: 'body.md'
+        tag: ${{ steps.get-version.outputs.RELEASE_VERSION }}
+        name: ${{ steps.get-version.outputs.RELEASE_INFO }}
+        token: ${{ SECRETS.GITHUB_TOKEN }}
+        makeLatest: true
+        artifacts: "dist/dash_extensions*,PKG-INFO"
+        replacesArtifacts: true
+        removeArtifacts: true
+        commit: ${{ steps.commit-and-create-branch.outputs.commit_long_sha }}
