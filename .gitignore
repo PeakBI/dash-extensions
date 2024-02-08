@@ -131,7 +131,6 @@ dmypy.json
 node_modules
 /assets/
 
-dash_extensions/*
 inst/*
 **/file_system_backend/*
 man/*
