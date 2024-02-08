@@ -2,14 +2,41 @@
 
 All notable changes to this project will be documented in this file.
 
-## [1.0.4+deps] - 26-10-23
+## [1.0.12] - 04-02-23
 
 ### Changed
 
-- Relax `more-itertools` constraint _down_ to `>=8.0.0`
-- Relax other package constraints
-- Upgrade `dev` dependencies (`js` & `py`)
-- Upgrade `dash-extensions` dependencies
+- Set `allow_duplicate=True` for the default logging configurations for the `LogTransform`, thereby fixing [#280](https://github.com/emilhe/dash-extensions/issues/280).
+
+## [1.0.11] - 03-02-23
+
+### Changed
+
+- Add `useCapture` property to `EventListener` and `Keyboard` components, thereby fixing [#255](https://github.com/emilhe/dash-extensions/issues/255).
+
+## [1.0.10] - 03-02-23
+
+### Changed
+
+- Update dependencies, including `Flask-caching`, thereby fixing [#296](https://github.com/emilhe/dash-extensions/issues/296).
+
+## [1.0.9] - 03-02-23
+
+### Changed
+
+- Fixed bug in `Keyboard` component where the keydown event would fire twice.
+
+## [1.0.8] - 25-01-23
+
+### Changed
+
+- Fixed bug in `BlockingCallbackTransform` component where the callback would never get invoked again, if an (uncaught) exception was raised during execution. Contributed by [lcornelatti](https://github.com/lcornelatti).
+
+## [1.0.7] - 27-12-23
+
+### Added
+
+- Re-introduce `Keyboard` component (due to many user requests)
 
 ## [1.0.4] - 07-10-23
 
@@ -22,6 +49,15 @@ All notable changes to this project will be documented in this file.
 - Dependencies updated
 - Dynamic prefixing is now applied recursively
 - Inline JS functions created using `assign` are now re-used if the code is identical
+
+## [1.0.4+deps] - 26-10-23
+
+### Changed
+
+- Relax `more-itertools` constraint _down_ to `>=8.0.0`
+- Relax other package constraints
+- Upgrade `dev` dependencies (`js` & `py`)
+- Upgrade `dash-extensions` dependencies
 
 ## [1.0.3] - 31-07-23
 
