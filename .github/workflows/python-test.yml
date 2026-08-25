@@ -38,7 +38,7 @@ concurrency:
 jobs:
   test:
     name: Unit-Tests
-    runs-on: ubuntu-latest
+    runs-on: uipath-ubuntu-latest
     strategy:
       fail-fast: true
       matrix:
@@ -48,24 +48,24 @@ jobs:
     env:
       TEST_CYCLE_BREAKER_ALLOWED_ERRORS: 7
     steps:
-    - uses: actions/checkout@v4.1.1
+    - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v4.1.1
       with:
         token: ${{ SECRETS.GITHUB_TOKEN }}
-    - uses: nanasess/setup-chromedriver@v2.2.0
-    - uses: actions/setup-node@v4.0.0
+    - uses: nanasess/setup-chromedriver@2c49495f83dd47aa7cee6b3d20cd5a5a3e1e016d  # v2.2.0
+    - uses: actions/setup-node@8f152de45cc393bb48ce5d89d36b731f54556e65  # v4.0.0
       with:
         node-version: '${{ matrix.node }}'
     - name: Set up Python
-      uses: actions/setup-python@v4.7.1
+      uses: actions/setup-python@65d7f2d534ac1bc67fcd62888c5f4f3d2cb2b236  # v4.7.1
       with:
         python-version: '${{ matrix.python }}'
     - name: Install poetry
-      uses: Gr1N/setup-poetry@v8
+      uses: Gr1N/setup-poetry@15821dc8a61bc630db542ae4baf6a7c19a994844  # v8
       with:
         poetry-version: '${{ matrix.poetry }}'
     - name: Cache poetry
       id: cached-poetry-dependencies
-      uses: actions/cache@v3.3.2
+      uses: actions/cache@704facf57e6136b1bc63b828d79edcd491f0ee84  # v3.3.2
       with:
         path: ~/.cache/pypoetry/virtualenvs
         key: ${{ runner.os }}-poetry-${{ matrix.poetry }}-${{ hashFiles('poetry.lock') }}-python-${{ matrix.python }}
